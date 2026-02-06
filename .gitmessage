@@ -1,0 +1,5 @@
+type(scope): subject
+
+# types: feat, fix, chore, docs, refactor, test, perf, ci, build
+# scope: api, mobile, repo, db, docs
+# ex: feat(api): create login endpoint

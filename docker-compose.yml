@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: pontocerto_db
+    environment:
+      POSTGRES_USER: pontocerto
+      POSTGRES_PASSWORD: pontocerto
+      POSTGRES_DB: pontocerto
+    ports:
+      - "5433:5432"
+    volumes:
+      - pontocerto_db:/var/lib/postgresql/data
+
+volumes:
+  pontocerto_db:
