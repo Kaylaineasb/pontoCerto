@@ -38,7 +38,10 @@ model Organization {
   timezone  String   @default("America/Maceio")
   createdAt DateTime @default(now())
 
-  users Users[]
+  users              Users[]
+  timeEntries        TimeEntry[]
+  adjustmentRequests AdjustmentRequest[]
+  auditLogs          AuditLog[]
 }
 
 model Users {
@@ -52,9 +55,72 @@ model Users {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  organization Organization @relation(fields: [orgId], references: [id])
+  organization       Organization        @relation(fields: [orgId], references: [id])
+  timeEntries        TimeEntry[]
+  adjustmentRequests AdjustmentRequest[]
+  auditLogs          AuditLog[]
 
   @@unique([orgId, email])
   @@index([orgId, role])
 }
 
+model TimeEntry {
+  id         String        @id @default(uuid())
+  orgId      String
+  userId     String
+  timestamp  DateTime      @default(now())
+  type       TimeEntryType
+  source     String?
+  deviceInfo Json?
+
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  accuracyM Int?
+  photoBase64 String? @db.Text
+  photoMime   String? 
+  sequence Int
+
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  user         Users        @relation(fields: [userId], references: [id])
+
+  @@index([orgId, userId, timestamp])
+  @@index([orgId, type, timestamp])
+}
+
+model AdjustmentRequest {
+  id         String           @id @default(uuid())
+  orgId      String
+  userId     String
+  date       DateTime
+  reason     String
+  payload    Json
+  status     AdjustmentStatus @default(PENDING)
+  approverId String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  user         Users        @relation(fields: [userId], references: [id])
+
+  @@index([orgId, userId, date])
+  @@index([orgId, status, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  orgId     String
+  actorId   String
+  action    String
+  entity    String
+  entityId  String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  actor        Users        @relation(fields: [actorId], references: [id])
+
+  @@index([orgId, createdAt])
+  @@index([orgId, entity, entityId])
+}
